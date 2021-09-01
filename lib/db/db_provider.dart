@@ -5,9 +5,9 @@ import '../model/task_model.dart';
 class DBProvider {
   DBProvider._();
   static final DBProvider dataBase = DBProvider._();
-  static Database? _database;
+  static Database _database;
 
-  Future<Database?> get database async {
+  Future<Database> get database async {
     if (_database != null) {
       return _database;
     }
@@ -36,7 +36,7 @@ class DBProvider {
       return Null;
     } else {
       var resultMap = res?.toList();
-      return resultMap!.isNotEmpty ? resultMap : Null;
+      return resultMap.isNotEmpty ? resultMap : Null;
     }
   }
 }

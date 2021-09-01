@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyTodoApp extends StatefulWidget {
-  const MyTodoApp({Key? key}) : super(key: key);
+  const MyTodoApp({Key key}) : super(key: key);
 
   @override
   _MyTodoAppState createState() => _MyTodoAppState();
@@ -27,6 +27,9 @@ class _MyTodoAppState extends State<MyTodoApp> {
   Color secondColor = Color(0xFF212061);
   Color btnColor = Color(0xFFff955b);
   Color editorColor = Color(0xFF4044cc);
+
+  TextEditingController inputController = TextEditingController();
+  String newTaskTxt = "";
 
   getTasks() async {
     final tasks = await DBProvider.dataBase.getTask();
@@ -48,6 +51,7 @@ class _MyTodoAppState extends State<MyTodoApp> {
           Expanded(
               child: FutureBuilder(
             future: getTasks(),
+            // ignore: missing_return
             builder: (_, taskData) {
               switch (taskData.connectionState) {
                 case ConnectionState.waiting:
@@ -60,7 +64,7 @@ class _MyTodoAppState extends State<MyTodoApp> {
                       return Padding(
                         padding: EdgeInsets.all(8.0),
                         child: ListView.builder(
-                          itemCount: taskData.data!.length,
+                          itemCount: taskData.data.length,
                           itemBuilder: (context, index) {
                             String task =
                                 taskData.data[index]['task'].toString();
@@ -68,15 +72,51 @@ class _MyTodoAppState extends State<MyTodoApp> {
                                     taskData.data[index]['creationDate'])
                                 .day
                                 .toString();
+                            return Card(
+                                color: secondColor,
+                                child: InkWell(
+                                    child: Row(children: [
+                                  Container(
+                                    margin: EdgeInsets.only(right: 12.0),
+                                    padding: EdgeInsets.all(12.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                    child: Text(day,
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 25.0,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(task,
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16.0)),
+                                    ),
+                                  ),
+                                ])));
                           },
                         ),
                       );
                     } else {
                       return Center(
-                        child: Text("You have no tasks today"),
+                        child: Text("You have no tasks today",
+                            style: TextStyle(color: Colors.white54)),
                       );
                     }
+                    // ignore: dead_code
+                    break;
                   }
+                case ConnectionState.none:
+                  // TODO: Handle this case.
+                  break;
+                case ConnectionState.active:
+                  // TODO: Handle this case.
+                  break;
               }
             },
           )),
@@ -91,6 +131,7 @@ class _MyTodoAppState extends State<MyTodoApp> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: inputController,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
@@ -102,7 +143,15 @@ class _MyTodoAppState extends State<MyTodoApp> {
                   width: 15.0,
                 ),
                 FlatButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    setState(() {
+                      newTaskTxt = inputController.text.toString();
+                      inputController.text = "";
+                    });
+                    Task newTask =
+                        Task(task: newTaskTxt, dateTime: DateTime.now());
+                    DBProvider.dataBase.addNewTask(newTask);
+                  },
                   icon: Icon(Icons.add),
                   color: btnColor,
                   label: Text("Add Task"),

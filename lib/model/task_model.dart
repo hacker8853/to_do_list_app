@@ -1,7 +1,7 @@
 class Task {
-  final int? id;
-  final String? task;
-  final DateTime? dateTime;
+  final int id;
+  final String task;
+  final DateTime dateTime;
 
   Task({this.id, this.task, this.dateTime});
 
